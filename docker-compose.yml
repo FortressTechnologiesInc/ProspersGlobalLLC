@@ -22,11 +22,46 @@ services:
 
   frontend:
     build: ./frontend
+    
     restart: always 
     ports:
       - "3000:3000"
     depends_on:
       - backend
 
+  sonarqube:
+    image: sonarqube:lts-community 
+    container_name: sonarqube
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  sonarscanner:
+    image: sonarsource/sonar-scanner-cli:latest
+    container_name: sonarscanner
+    depends_on:
+      - sonarqube
+    environment:
+      SONAR_HOST_URL: "http://192.168.1.18:9000"
+    volumes:
+      - ./backend:/usr/src
+    command: >
+      sonar-scanner
+      -Dsonar.projectBaseDir=/usr/src
+      -Dsonar.projectKey=prospers-global-llc
+      -Dsonar.sources=./src
+      -Dsonar.host.url=http://192.168.1.18:9000
+      -Dsonar.login=admin
+      -Dsonar.password=admin
+
 volumes:
   mysql_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
