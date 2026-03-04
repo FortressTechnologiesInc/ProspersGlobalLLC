@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8
+    restart: always 
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123 
+      MYSQL_DATABASE: prospers_fintech
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    restart: always 
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+
+  frontend:
+    build: ./frontend
+    restart: always 
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
